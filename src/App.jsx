@@ -2,8 +2,8 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import SpatialViewer, { mapValueToColor } from './SpatialViewer'; 
 import { 
   initializeData, 
-  loadFeatureData, 
-  loadMultipleFeaturesData,
+  loadFeatureDataForSlice, 
+  loadMultipleFeaturesDataForSlice,
   getBaseData,
   ALL_SLICES,
   ALL_REGIONS,
@@ -357,7 +357,6 @@ const CompareViewerModal = ({
                 console.log('Loading data for comparison views...');
                 
                 // 收集所有需要加载的特征
-                const traitKeys = [...new Set(compareViews.map(view => view.trait))];
                 const sliceKeys = [...new Set(compareViews.map(view => view.slice))];
                 
                 // 为每个切片和特征组合加载数据
@@ -374,15 +373,14 @@ const CompareViewerModal = ({
                         const isTF = sliceTraitKeys[0].includes('_activity');
                         const category = isTF ? 'tfs' : 'genes';
                         
-                        const enhancedData = await loadMultipleFeaturesData(sliceTraitKeys, category);
+                        const enhancedData = await loadMultipleFeaturesDataForSlice(sliceTraitKeys, slice, category);
                         
                         // 为每个视图存储数据
                         compareViews.forEach(view => {
                             if (view.slice === slice) {
                                 const cacheKey = `${view.slice}-${view.trait}`;
                                 // 过滤到当前切片
-                                const sliceData = enhancedData.filter(d => d.slice === view.slice);
-                                newCompareData.set(cacheKey, sliceData);
+                                newCompareData.set(cacheKey, enhancedData);
                             }
                         });
                     }
@@ -678,10 +676,7 @@ function App() {
       const category = view.trait.includes('_activity') ? 'tfs' : 'genes';
       
       // 加载特征数据
-      const dataWithFeature = await loadFeatureData(view.trait, category);
-      
-      // 过滤到当前切片
-      const sliceData = dataWithFeature.filter(d => d.slice === view.slice);
+      const sliceData = await loadFeatureDataForSlice(view.trait, view.slice, category);
       
       // 更新缓存
       setEnhancedData(prev => new Map(prev).set(cacheKey, sliceData));

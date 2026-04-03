@@ -11,6 +11,8 @@ const TRAIT_CATEGORIES = [
 ];
 const ALL_TRAITS_FLAT = [];
 const BASE_DATA = [];
+const BASE_DATA_BY_SLICE = new Map();
+const BASE_INDEX_BY_ID = new Map();
 
 // 数据加载状态
 let isInitialized = false;
@@ -82,6 +84,16 @@ export const initializeData = async () => {
     // 设置基础数据
     BASE_DATA.length = 0;
     BASE_DATA.push(...baseData);
+    BASE_DATA_BY_SLICE.clear();
+    BASE_INDEX_BY_ID.clear();
+
+    BASE_DATA.forEach((cell, index) => {
+      BASE_INDEX_BY_ID.set(cell.id, index);
+      if (!BASE_DATA_BY_SLICE.has(cell.slice)) {
+        BASE_DATA_BY_SLICE.set(cell.slice, []);
+      }
+      BASE_DATA_BY_SLICE.get(cell.slice).push(cell);
+    });
     
     // 构建切片数据
     SECTION_DATA.length = 0;
@@ -116,6 +128,21 @@ export const loadFeatureData = async (featureName, category = 'genes') => {
   }));
 };
 
+// 仅加载单个切片的特征数据，避免对全量数据进行 map 造成内存压力
+export const loadFeatureDataForSlice = async (featureName, slice, category = 'genes') => {
+  if (!isInitialized) {
+    await initializeData();
+  }
+
+  const featureArray = await binaryDataLoader.loadFeature(featureName, category);
+  const sliceBaseData = BASE_DATA_BY_SLICE.get(slice) || [];
+
+  return sliceBaseData.map(cell => ({
+    ...cell,
+    [featureName]: featureArray[BASE_INDEX_BY_ID.get(cell.id)]
+  }));
+};
+
 // 批量加载多个特征
 export const loadMultipleFeaturesData = async (featureNames, category = 'genes') => {
   if (!isInitialized) {
@@ -129,6 +156,25 @@ export const loadMultipleFeaturesData = async (featureNames, category = 'genes')
     const cellWithFeatures = { ...cell };
     featureNames.forEach(featureName => {
       cellWithFeatures[featureName] = featuresData[featureName][index];
+    });
+    return cellWithFeatures;
+  });
+};
+
+// 仅加载单个切片的多个特征，适用于比较视图，减少大对象构造
+export const loadMultipleFeaturesDataForSlice = async (featureNames, slice, category = 'genes') => {
+  if (!isInitialized) {
+    await initializeData();
+  }
+
+  const featuresData = await binaryDataLoader.loadMultipleFeatures(featureNames, category);
+  const sliceBaseData = BASE_DATA_BY_SLICE.get(slice) || [];
+
+  return sliceBaseData.map(cell => {
+    const cellWithFeatures = { ...cell };
+    const cellIndex = BASE_INDEX_BY_ID.get(cell.id);
+    featureNames.forEach(featureName => {
+      cellWithFeatures[featureName] = featuresData[featureName][cellIndex];
     });
     return cellWithFeatures;
   });
