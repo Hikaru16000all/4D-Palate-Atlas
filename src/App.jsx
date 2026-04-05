@@ -1027,7 +1027,22 @@ function App() {
     <div className={`flex h-screen ${mainBgClass} font-sans`}>
       
       {/* --- Top Bar --- */}
-      <div className={`absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-start px-4 z-40`}>
+      <div className={`absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-between px-4 z-40`}>
+        <div className="flex rounded-lg overflow-hidden border border-gray-500">
+            <button
+                onClick={() => setActivePage('atlas')}
+                className={`${topButton} rounded-none ${activePage === 'atlas' ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-700'}`}
+            >
+                Atlas
+            </button>
+            <button
+                onClick={() => setActivePage('signal_tf')}
+                className={`${topButton} rounded-none ${activePage === 'signal_tf' ? 'bg-indigo-600' : 'bg-gray-600 hover:bg-gray-700'}`}
+            >
+                Signal→TF
+            </button>
+        </div>
+
         <div className="flex space-x-4">
             {activePage === 'atlas' && (
               <div className={`flex items-center space-x-3 text-base ${textClass}`}>
@@ -1051,20 +1066,6 @@ function App() {
             >
                 {isLightTheme ? '☀️ Light' : '🌙 Dark'}
             </button>
-            <div className="flex rounded-lg overflow-hidden border border-gray-500">
-                <button
-                    onClick={() => setActivePage('atlas')}
-                    className={`${topButton} rounded-none ${activePage === 'atlas' ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-700'}`}
-                >
-                    Atlas
-                </button>
-                <button
-                    onClick={() => setActivePage('signal_tf')}
-                    className={`${topButton} rounded-none ${activePage === 'signal_tf' ? 'bg-indigo-600' : 'bg-gray-600 hover:bg-gray-700'}`}
-                >
-                    Signal→TF
-                </button>
-            </div>
             {activePage === 'atlas' && (
               <button 
                   onClick={() => setIsCompareModalOpen(true)}
