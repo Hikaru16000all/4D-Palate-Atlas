@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import SpatialViewer, { mapValueToColor } from './SpatialViewer'; 
-import {
-  initializeData,
-  loadFeatureDataForSlice,
+import { 
+  initializeData, 
+  loadFeatureDataForSlice, 
   loadMultipleFeaturesDataForSlice,
   getBaseData,
   ALL_SLICES,
@@ -1072,7 +1072,6 @@ function App() {
       </div>
       
       {/* --- Main Content Area --- */}
-      {activePage === 'atlas' ? (
       <div className="flex flex-grow mt-14">
       
         {/* --- Left Control Panel (Trait & Section Selection) --- */}
@@ -1247,24 +1246,17 @@ function App() {
         </div>
         
       </div>
-      ) : (
-        <div className="flex flex-grow mt-14 p-5">
-          <SignalTFPage isLightTheme={isLightTheme} />
-        </div>
-      )}
       
       {/* Compare Selection Modal */}
-      {activePage === 'atlas' && (
-        <MemoizedCompareModal 
-          isOpen={isCompareModalOpen}
-          onClose={() => setIsCompareModalOpen(false)}
-          onStartCompare={handleStartCompare}
-          ALL_SLICES={memoizedSlices}
-          ALL_TRAITS_FLAT={memoizedTraits}
-          SECTION_DATA={memoizedSections}
-          TRAIT_CATEGORIES={memoizedCategories}
-        />
-      )}
+      <MemoizedCompareModal 
+        isOpen={isCompareModalOpen}
+        onClose={() => setIsCompareModalOpen(false)}
+        onStartCompare={handleStartCompare}
+        ALL_SLICES={memoizedSlices}
+        ALL_TRAITS_FLAT={memoizedTraits}
+        SECTION_DATA={memoizedSections}
+        TRAIT_CATEGORIES={memoizedCategories}
+      />
       
       {/* Compare Viewer Modal */}
       <CompareViewerModal 
