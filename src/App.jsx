@@ -1027,20 +1027,21 @@ function App() {
     <div className={`flex h-screen ${mainBgClass} font-sans`}>
       
       {/* --- Top Bar --- */}
-      <div className={`absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-end px-4 z-40`}>
+      <div className={`absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-start px-4 z-40`}>
         <div className="flex space-x-4">
-            {/* Point Size Slider */}
-            <div className={`flex items-center space-x-3 text-base ${textClass}`}>
-                <span>Cell Size:</span>
-                <input 
-                    type="range" 
-                    min="1" 
-                    max="100" 
-                    value={pointRadius} 
-                    onChange={(e) => setPointRadius(Number(e.target.value))}
-                    className="w-28 h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer range-lg"
-                />
-            </div>
+            {activePage === 'atlas' && (
+              <div className={`flex items-center space-x-3 text-base ${textClass}`}>
+                  <span>Cell Size:</span>
+                  <input 
+                      type="range" 
+                      min="1" 
+                      max="100" 
+                      value={pointRadius} 
+                      onChange={(e) => setPointRadius(Number(e.target.value))}
+                      className="w-28 h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer range-lg"
+                  />
+              </div>
+            )}
 
             {/* Theme Toggle */}
             <button 
