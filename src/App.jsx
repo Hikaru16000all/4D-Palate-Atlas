@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import SpatialViewer, { mapValueToColor } from './SpatialViewer'; 
-import { 
-  initializeData, 
-  loadFeatureDataForSlice, 
+import {
+  initializeData,
+  loadFeatureDataForSlice,
   loadMultipleFeaturesDataForSlice,
   getBaseData,
   ALL_SLICES,
@@ -12,6 +12,7 @@ import {
   ALL_TRAITS_FLAT
 } from './realDataConstants';
 import html2canvas from 'html2canvas';
+import SignalTFPage from './pages/SignalTFPage';
 
 // --- UI Constants & Helpers ---
 const MAX_VIEWS = 4; 
@@ -582,6 +583,7 @@ function App() {
   const [pointRadius, setPointRadius] = useState(25); 
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isCompareViewerOpen, setIsCompareViewerOpen] = useState(false);
+  const [activePage, setActivePage] = useState('atlas');
   const [compareViews, setCompareViews] = useState([]);
   const [traitSearch, setTraitSearch] = useState(''); 
   const [isLightTheme, setIsLightTheme] = useState(false); 
@@ -874,20 +876,21 @@ function App() {
     <div className={`flex h-screen ${mainBgClass} font-sans`}>
       
       {/* --- Top Bar --- */}
-      <div className={`absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-end px-4 z-40`}>
+      <div className={`absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-start px-4 z-40`}>
         <div className="flex space-x-4">
-            {/* Point Size Slider */}
-            <div className={`flex items-center space-x-3 text-base ${textClass}`}>
-                <span>Cell Size:</span>
-                <input 
-                    type="range" 
-                    min="1" 
-                    max="100" 
-                    value={pointRadius} 
-                    onChange={(e) => setPointRadius(Number(e.target.value))}
-                    className="w-28 h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer range-lg"
-                />
-            </div>
+            {activePage === 'atlas' && (
+              <div className={`flex items-center space-x-3 text-base ${textClass}`}>
+                  <span>Cell Size:</span>
+                  <input 
+                      type="range" 
+                      min="1" 
+                      max="100" 
+                      value={pointRadius} 
+                      onChange={(e) => setPointRadius(Number(e.target.value))}
+                      className="w-28 h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer range-lg"
+                  />
+              </div>
+            )}
 
             {/* Theme Toggle */}
             <button 
@@ -897,22 +900,41 @@ function App() {
             >
                 {isLightTheme ? '☀️ Light' : '🌙 Dark'}
             </button>
-            <button 
-                onClick={() => setIsCompareModalOpen(true)}
-                className={`${topButton} bg-blue-600 hover:bg-blue-700`}
-            >
-                Compare
-            </button>
-            <button
-                onClick={handleDownloadImage}
-                className={`${topButton} bg-gray-600 hover:bg-gray-700`}
-            >
-                Download Results
-            </button>
+            <div className="flex rounded-lg overflow-hidden border border-gray-500">
+                <button
+                    onClick={() => setActivePage('atlas')}
+                    className={`${topButton} rounded-none ${activePage === 'atlas' ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-700'}`}
+                >
+                    Atlas
+                </button>
+                <button
+                    onClick={() => setActivePage('signal_tf')}
+                    className={`${topButton} rounded-none ${activePage === 'signal_tf' ? 'bg-indigo-600' : 'bg-gray-600 hover:bg-gray-700'}`}
+                >
+                    Signal→TF
+                </button>
+            </div>
+            {activePage === 'atlas' && (
+              <button 
+                  onClick={() => setIsCompareModalOpen(true)}
+                  className={`${topButton} bg-blue-600 hover:bg-blue-700`}
+              >
+                  Compare
+              </button>
+            )}
+            {activePage === 'atlas' && (
+              <button
+                  onClick={handleDownloadImage}
+                  className={`${topButton} bg-gray-600 hover:bg-gray-700`}
+              >
+                  Download Results
+              </button>
+            )}
         </div>
       </div>
       
       {/* --- Main Content Area --- */}
+      {activePage === 'atlas' ? (
       <div className="flex flex-grow mt-14">
       
         {/* --- Left Control Panel (Trait & Section Selection) --- */}
@@ -1087,30 +1109,39 @@ function App() {
         </div>
         
       </div>
+      ) : (
+        <div className="flex flex-grow mt-14 p-5">
+          <SignalTFPage isLightTheme={isLightTheme} />
+        </div>
+      )}
       
       {/* Compare Selection Modal */}
-      <MemoizedCompareModal 
-        isOpen={isCompareModalOpen}
-        onClose={() => setIsCompareModalOpen(false)}
-        onStartCompare={handleStartCompare}
-        ALL_SLICES={memoizedSlices}
-        ALL_TRAITS_FLAT={memoizedTraits}
-        SECTION_DATA={memoizedSections}
-        TRAIT_CATEGORIES={memoizedCategories}
-      />
+      {activePage === 'atlas' && (
+        <MemoizedCompareModal 
+          isOpen={isCompareModalOpen}
+          onClose={() => setIsCompareModalOpen(false)}
+          onStartCompare={handleStartCompare}
+          ALL_SLICES={memoizedSlices}
+          ALL_TRAITS_FLAT={memoizedTraits}
+          SECTION_DATA={memoizedSections}
+          TRAIT_CATEGORIES={memoizedCategories}
+        />
+      )}
       
       {/* Compare Viewer Modal */}
-      <CompareViewerModal 
-        isOpen={isCompareViewerOpen}
-        onClose={handleCloseCompareViewer}
-        compareViews={compareViews}
-        pointRadius={pointRadius}
-        isLightTheme={isLightTheme}
-        showCellType={showCellType}
-        onCellTypeToggle={() => setShowCellType(!showCellType)}
-        ALL_REGIONS={ALL_REGIONS}
-        ALL_TRAITS_FLAT={ALL_TRAITS_FLAT}
-      />
+      {activePage === 'atlas' && (
+        <CompareViewerModal 
+          isOpen={isCompareViewerOpen}
+          onClose={handleCloseCompareViewer}
+          compareViews={compareViews}
+          pointRadius={pointRadius}
+          isLightTheme={isLightTheme}
+          showCellType={showCellType}
+          onCellTypeToggle={() => setShowCellType(!showCellType)}
+          ALL_REGIONS={ALL_REGIONS}
+          ALL_TRAITS_FLAT={ALL_TRAITS_FLAT}
+        />
+      )}
       
     </div>
   );
