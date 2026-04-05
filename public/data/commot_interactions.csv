@@ -1,0 +1,10 @@
+slice,pathway,senderRegion,receiverRegion,downstreamTF,correlation,direction
+E12.5,TGFb,Mesenchyme,Medial Edge Epithelium,Smad5_activity_extended,0.78,activation
+E12.5,WNT,Palatal Shelf Epithelium,Anterior Mesenchyme,Tcf7l2_activity_extended,0.74,activation
+E13.5,FGF,Posterior Mesenchyme,Periderm,Etv5_activity_extended,0.69,activation
+E13.5,Hedgehog,Epithelial Ridge,Neural Crest-derived Mesenchyme,Gli2_activity_extended,0.71,activation
+E14.5,BMP,Medial Edge Epithelium,Osteogenic Mesenchyme,Runx2_activity_extended,0.66,activation
+E14.5,NOTCH,Periderm,Basal Epithelium,Klf5_activity_direct,-0.52,repression
+E15.5,PDGF,Vascular Niche,Fibroblast-like Mesenchyme,Egr1_activity_direct,0.64,activation
+E15.5,EGF,Oral Epithelium,MEE-derived Cells,Fos_activity_direct,0.58,activation
+E16.5,WNT,Anterior Epithelium,Suture Mesenchyme,Lef1_activity_direct,0.62,activation
