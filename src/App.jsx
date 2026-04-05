@@ -12,7 +12,7 @@ import {
   ALL_TRAITS_FLAT
 } from './realDataConstants';
 import html2canvas from 'html2canvas';
-import { loadCOMMOTInteractions } from './commotInteractions';
+import SignalTFPage from './pages/SignalTFPage';
 
 // --- UI Constants & Helpers ---
 const MAX_VIEWS = 4; 
@@ -734,7 +734,7 @@ function App() {
   const [pointRadius, setPointRadius] = useState(25); 
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isCompareViewerOpen, setIsCompareViewerOpen] = useState(false);
-  const [isSignalTFModalOpen, setIsSignalTFModalOpen] = useState(false);
+  const [activePage, setActivePage] = useState('atlas');
   const [compareViews, setCompareViews] = useState([]);
   const [traitSearch, setTraitSearch] = useState(''); 
   const [isLightTheme, setIsLightTheme] = useState(false); 
@@ -1050,24 +1050,36 @@ function App() {
             >
                 {isLightTheme ? '☀️ Light' : '🌙 Dark'}
             </button>
-            <button 
-                onClick={() => setIsCompareModalOpen(true)}
-                className={`${topButton} bg-blue-600 hover:bg-blue-700`}
-            >
-                Compare
-            </button>
-            <button
-                onClick={() => setIsSignalTFModalOpen(true)}
-                className={`${topButton} bg-indigo-600 hover:bg-indigo-700`}
-            >
-                Signal→TF
-            </button>
-            <button
-                onClick={handleDownloadImage}
-                className={`${topButton} bg-gray-600 hover:bg-gray-700`}
-            >
-                Download Results
-            </button>
+            <div className="flex rounded-lg overflow-hidden border border-gray-500">
+                <button
+                    onClick={() => setActivePage('atlas')}
+                    className={`${topButton} rounded-none ${activePage === 'atlas' ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-700'}`}
+                >
+                    Atlas
+                </button>
+                <button
+                    onClick={() => setActivePage('signal_tf')}
+                    className={`${topButton} rounded-none ${activePage === 'signal_tf' ? 'bg-indigo-600' : 'bg-gray-600 hover:bg-gray-700'}`}
+                >
+                    Signal→TF
+                </button>
+            </div>
+            {activePage === 'atlas' && (
+              <button 
+                  onClick={() => setIsCompareModalOpen(true)}
+                  className={`${topButton} bg-blue-600 hover:bg-blue-700`}
+              >
+                  Compare
+              </button>
+            )}
+            {activePage === 'atlas' && (
+              <button
+                  onClick={handleDownloadImage}
+                  className={`${topButton} bg-gray-600 hover:bg-gray-700`}
+              >
+                  Download Results
+              </button>
+            )}
         </div>
       </div>
       
@@ -1267,23 +1279,19 @@ function App() {
       )}
       
       {/* Compare Viewer Modal */}
-      <CompareViewerModal 
-        isOpen={isCompareViewerOpen}
-        onClose={handleCloseCompareViewer}
-        compareViews={compareViews}
-        pointRadius={pointRadius}
-        isLightTheme={isLightTheme}
-        showCellType={showCellType}
-        onCellTypeToggle={() => setShowCellType(!showCellType)}
-        ALL_REGIONS={ALL_REGIONS}
-        ALL_TRAITS_FLAT={ALL_TRAITS_FLAT}
-      />
-
-      <SignalTFModal
-        isOpen={isSignalTFModalOpen}
-        onClose={() => setIsSignalTFModalOpen(false)}
-        isLightTheme={isLightTheme}
-      />
+      {activePage === 'atlas' && (
+        <CompareViewerModal 
+          isOpen={isCompareViewerOpen}
+          onClose={handleCloseCompareViewer}
+          compareViews={compareViews}
+          pointRadius={pointRadius}
+          isLightTheme={isLightTheme}
+          showCellType={showCellType}
+          onCellTypeToggle={() => setShowCellType(!showCellType)}
+          ALL_REGIONS={ALL_REGIONS}
+          ALL_TRAITS_FLAT={ALL_TRAITS_FLAT}
+        />
+      )}
       
     </div>
   );

@@ -114,11 +114,11 @@ const parseCOMMOTCSV = (csvText) => {
     const correlationValue = Number(row[headerIndexMap.correlation]);
 
     return {
-      slice: row[headerIndexMap.slice],
-      pathway: row[headerIndexMap.pathway],
-      senderRegion: row[headerIndexMap.senderRegion],
-      receiverRegion: row[headerIndexMap.receiverRegion],
-      downstreamTF: row[headerIndexMap.downstreamTF],
+      slice: row[headerIndexMap.slice] || 'Unknown',
+      pathway: row[headerIndexMap.pathway] || 'Unknown',
+      senderRegion: row[headerIndexMap.senderRegion] || 'Unknown',
+      receiverRegion: row[headerIndexMap.receiverRegion] || 'Unknown',
+      downstreamTF: row[headerIndexMap.downstreamTF] || 'Unknown',
       correlation: Number.isFinite(correlationValue) ? correlationValue : 0,
       direction: row[headerIndexMap.direction] || 'unknown'
     };
@@ -127,7 +127,8 @@ const parseCOMMOTCSV = (csvText) => {
 
 export const loadCOMMOTInteractions = async () => {
   try {
-    const response = await fetch('./data/commot_interactions.csv');
+    const csvUrl = `${import.meta.env.BASE_URL}data/commot_interactions.csv`;
+    const response = await fetch(csvUrl);
     if (!response.ok) {
       return FALLBACK_COMMOT_INTERACTIONS;
     }
