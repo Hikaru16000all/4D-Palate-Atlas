@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { loadCOMMOTInteractions } from '../commotInteractions';
+import { loadCOMMOTIndex, loadCOMMOTInteractionsBySlice } from '../commotInteractions';
 
 const FILTER_FIELDS = [
   { key: 'slice', label: 'Slice' },
@@ -25,36 +25,67 @@ const SignalTFPage = ({ isLightTheme }) => {
   const [interactions, setInteractions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [availableSlices, setAvailableSlices] = useState([]);
 
   const optionsByField = useMemo(
     () =>
       FILTER_FIELDS.reduce((acc, field) => {
-        acc[field.key] = Array.from(
-          new Set(interactions.map(item => item[field.key]).filter(Boolean))
-        ).sort();
+        const values = field.key === 'slice'
+          ? availableSlices
+          : Array.from(new Set(interactions.map(item => item[field.key]).filter(Boolean))).sort();
+        acc[field.key] = values;
         return acc;
       }, {}),
-    [interactions]
+    [interactions, availableSlices]
   );
 
   useEffect(() => {
-    const loadInteractions = async () => {
+    const loadIndex = async () => {
       setLoading(true);
       setLoadError('');
       try {
-        const loaded = await loadCOMMOTInteractions();
-        setInteractions(Array.isArray(loaded) ? loaded : []);
+        const index = await loadCOMMOTIndex();
+        const slices = (index?.slices || []).map(entry => entry.slice).filter(Boolean);
+        setAvailableSlices(slices);
+        if (slices.length > 0) {
+          setFieldFilters(prev => ({ ...prev, slice: prev.slice || slices[0] }));
+        }
       } catch (error) {
-        console.error('SignalTFPage loading error:', error);
-        setLoadError('Failed to load interaction data.');
+        console.error('SignalTFPage index loading error:', error);
+        setLoadError('Failed to load interaction index.');
         setInteractions([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadInteractions();
+    loadIndex();
   }, []);
+
+  useEffect(() => {
+    const selectedSlice = fieldFilters.slice;
+    if (!selectedSlice) {
+      setInteractions([]);
+      return;
+    }
+
+    const loadSliceData = async () => {
+      setLoading(true);
+      setLoadError('');
+      try {
+        const loaded = await loadCOMMOTInteractionsBySlice(selectedSlice);
+        setInteractions(Array.isArray(loaded) ? loaded : []);
+      } catch (error) {
+        console.error('SignalTFPage slice loading error:', error);
+        setLoadError(`Failed to load interactions for slice ${selectedSlice}.`);
+        setInteractions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSliceData();
+  }, [fieldFilters.slice]);
 
   const filteredInteractions = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -158,6 +189,9 @@ const SignalTFPage = ({ isLightTheme }) => {
         <div className="rounded border border-gray-500 p-2">Pathways: <span className="font-semibold">{new Set(filteredInteractions.map(i => i.pathway)).size}</span></div>
         <div className="rounded border border-gray-500 p-2">Downstream TFs: <span className="font-semibold">{new Set(filteredInteractions.map(i => i.downstreamTF)).size}</span></div>
       </div>
+      <p className="text-xs opacity-70 mb-3">
+        Large-data mode: interactions are loaded on-demand by selected slice to avoid loading the full CSV into memory.
+      </p>
       {loadError && (
         <div className="mb-3 text-sm text-red-500">{loadError}</div>
       )}
