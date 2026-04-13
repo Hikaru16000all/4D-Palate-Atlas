@@ -18,7 +18,7 @@ const SignalTFPage = ({ isLightTheme }) => {
   const [search, setSearch] = useState('');
   const [fieldFilters, setFieldFilters] = useState(() =>
     FILTER_FIELDS.reduce((acc, field) => {
-      acc[field.key] = 'all';
+      acc[field.key] = '';
       return acc;
     }, {})
   );
@@ -62,7 +62,8 @@ const SignalTFPage = ({ isLightTheme }) => {
     return interactions
       .filter(item =>
         FILTER_FIELDS.every(field =>
-          fieldFilters[field.key] === 'all' || item[field.key] === fieldFilters[field.key]
+          !fieldFilters[field.key] ||
+          safeLower(item[field.key]).includes(safeLower(fieldFilters[field.key]))
         )
       )
       .filter(item => {
@@ -118,23 +119,38 @@ const SignalTFPage = ({ isLightTheme }) => {
         {FILTER_FIELDS.map(field => (
           <div key={field.key} className="flex flex-col gap-1">
             <label className="text-xs opacity-80">{field.label}</label>
-            <select
+            <input
+              list={`signal-filter-${field.key}`}
               value={fieldFilters[field.key]}
               onChange={(e) => {
                 const value = e.target.value;
                 setFieldFilters(prev => ({ ...prev, [field.key]: value }));
               }}
+              placeholder={`Type ${field.label}...`}
               className={`border rounded px-3 py-2 text-sm ${inputClass}`}
-            >
-              <option value="all">All {field.label}</option>
+            />
+            <datalist id={`signal-filter-${field.key}`}>
               {(optionsByField[field.key] || []).map(optionValue => (
-                <option key={optionValue} value={optionValue}>
-                  {optionValue}
-                </option>
+                <option key={optionValue} value={optionValue} />
               ))}
-            </select>
+            </datalist>
           </div>
         ))}
+      </div>
+      <div className="mb-4">
+        <button
+          onClick={() =>
+            setFieldFilters(
+              FILTER_FIELDS.reduce((acc, field) => {
+                acc[field.key] = '';
+                return acc;
+              }, {})
+            )
+          }
+          className="px-3 py-2 text-sm rounded bg-gray-600 text-white hover:bg-gray-700"
+        >
+          Clear all field filters
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 text-sm">
