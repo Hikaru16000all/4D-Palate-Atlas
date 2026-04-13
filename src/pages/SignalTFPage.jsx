@@ -46,6 +46,11 @@ const SignalTFPage = ({ isLightTheme }) => {
       .filter(item => {
         if (!keyword) return true;
         return [
+          item.slice,
+          item.ligand,
+          item.receptor,
+          item.signalType,
+          item.parentSignalId,
           item.pathway,
           item.downstreamTF,
           item.senderRegion,
@@ -53,7 +58,11 @@ const SignalTFPage = ({ isLightTheme }) => {
           item.direction
         ].some(value => safeLower(value).includes(keyword));
       })
-      .sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
+      .sort((a, b) => {
+        const c1 = Math.abs(Number(b.correlation || 0));
+        const c2 = Math.abs(Number(a.correlation || 0));
+        return c1 - c2;
+      });
   }, [interactions, search, pathwayFilter, sliceFilter]);
 
   const panelClass = isLightTheme ? 'bg-white text-gray-900' : 'bg-gray-800 text-gray-100';
@@ -103,10 +112,11 @@ const SignalTFPage = ({ isLightTheme }) => {
         </select>
       </div>
 
-      <p className="text-sm mb-3 opacity-80">
-        Ranked interactions: {filteredInteractions.length}. A complete interaction resource is available in the
-        supplementary table and interactive atlas export.
-      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 text-sm">
+        <div className="rounded border border-gray-500 p-2">Interactions: <span className="font-semibold">{filteredInteractions.length}</span></div>
+        <div className="rounded border border-gray-500 p-2">Pathways: <span className="font-semibold">{new Set(filteredInteractions.map(i => i.pathway)).size}</span></div>
+        <div className="rounded border border-gray-500 p-2">Downstream TFs: <span className="font-semibold">{new Set(filteredInteractions.map(i => i.downstreamTF)).size}</span></div>
+      </div>
       {loadError && (
         <div className="mb-3 text-sm text-red-500">{loadError}</div>
       )}
@@ -116,32 +126,40 @@ const SignalTFPage = ({ isLightTheme }) => {
           <thead className={isLightTheme ? 'bg-gray-100' : 'bg-gray-700'}>
             <tr>
               <th className="text-left px-3 py-2">Section</th>
+              <th className="text-left px-3 py-2">Ligand</th>
+              <th className="text-left px-3 py-2">Receptor</th>
+              <th className="text-left px-3 py-2">Signal Type</th>
+              <th className="text-left px-3 py-2">Parent Signal</th>
               <th className="text-left px-3 py-2">Pathway</th>
-              <th className="text-left px-3 py-2">Sender → Receiver</th>
+              <th className="text-left px-3 py-2">Sender Region</th>
+              <th className="text-left px-3 py-2">Receiver Region</th>
               <th className="text-left px-3 py-2">Downstream TF</th>
-              <th className="text-left px-3 py-2">Correlation</th>
               <th className="text-left px-3 py-2">Direction</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan="6" className="px-3 py-6 text-center opacity-80">Loading COMMOT interactions...</td>
+                <td colSpan="10" className="px-3 py-6 text-center opacity-80">Loading COMMOT interactions...</td>
               </tr>
             )}
             {filteredInteractions.map((item, idx) => (
               <tr key={`${item.slice}-${item.pathway}-${item.downstreamTF}-${idx}`} className="border-t border-gray-600">
                 <td className="px-3 py-2">{item.slice}</td>
+                <td className="px-3 py-2">{item.ligand}</td>
+                <td className="px-3 py-2">{item.receptor}</td>
+                <td className="px-3 py-2">{item.signalType}</td>
+                <td className="px-3 py-2">{item.parentSignalId}</td>
                 <td className="px-3 py-2">{item.pathway}</td>
-                <td className="px-3 py-2">{item.senderRegion} → {item.receiverRegion}</td>
+                <td className="px-3 py-2">{item.senderRegion}</td>
+                <td className="px-3 py-2">{item.receiverRegion}</td>
                 <td className="px-3 py-2 font-semibold">{item.downstreamTF}</td>
-                <td className="px-3 py-2">{item.correlation.toFixed(2)}</td>
                 <td className="px-3 py-2">{item.direction}</td>
               </tr>
             ))}
             {!loading && filteredInteractions.length === 0 && (
               <tr>
-                <td colSpan="6" className="px-3 py-6 text-center opacity-80">No interactions match current filters.</td>
+                <td colSpan="10" className="px-3 py-6 text-center opacity-80">No interactions match current filters.</td>
               </tr>
             )}
           </tbody>

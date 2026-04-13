@@ -1,6 +1,10 @@
 const FALLBACK_COMMOT_INTERACTIONS = [
   {
     slice: 'E12.5',
+    ligand: 'Inhba',
+    receptor: 'Acvr1b_Acvr2a',
+    signalType: 'lr_pair',
+    parentSignalId: 'pathway:ACTIVIN',
     pathway: 'TGFb',
     senderRegion: 'Mesenchyme',
     receiverRegion: 'Medial Edge Epithelium',
@@ -10,6 +14,10 @@ const FALLBACK_COMMOT_INTERACTIONS = [
   },
   {
     slice: 'E12.5',
+    ligand: 'Wnt10a',
+    receptor: 'Fzd7',
+    signalType: 'lr_pair',
+    parentSignalId: 'pathway:WNT',
     pathway: 'WNT',
     senderRegion: 'Palatal Shelf Epithelium',
     receiverRegion: 'Anterior Mesenchyme',
@@ -19,6 +27,10 @@ const FALLBACK_COMMOT_INTERACTIONS = [
   },
   {
     slice: 'E13.5',
+    ligand: 'Fgf8',
+    receptor: 'Fgfr2',
+    signalType: 'lr_pair',
+    parentSignalId: 'pathway:FGF',
     pathway: 'FGF',
     senderRegion: 'Posterior Mesenchyme',
     receiverRegion: 'Periderm',
@@ -28,6 +40,10 @@ const FALLBACK_COMMOT_INTERACTIONS = [
   },
   {
     slice: 'E13.5',
+    ligand: 'Ihh',
+    receptor: 'Ptch1',
+    signalType: 'lr_pair',
+    parentSignalId: 'pathway:HEDGEHOG',
     pathway: 'Hedgehog',
     senderRegion: 'Epithelial Ridge',
     receiverRegion: 'Neural Crest-derived Mesenchyme',
@@ -37,6 +53,10 @@ const FALLBACK_COMMOT_INTERACTIONS = [
   },
   {
     slice: 'E14.5',
+    ligand: 'Bmp4',
+    receptor: 'Bmpr2',
+    signalType: 'lr_pair',
+    parentSignalId: 'pathway:BMP',
     pathway: 'BMP',
     senderRegion: 'Medial Edge Epithelium',
     receiverRegion: 'Osteogenic Mesenchyme',
@@ -48,11 +68,14 @@ const FALLBACK_COMMOT_INTERACTIONS = [
 
 const REQUIRED_COLUMNS = [
   'slice',
+  'ligand',
+  'receptor',
+  'signal_type',
+  'parent_signal_id',
   'pathway',
-  'senderRegion',
-  'receiverRegion',
+  'sender_region',
+  'receiver_region',
   'downstreamTF',
-  'correlation',
   'direction'
 ];
 
@@ -111,13 +134,21 @@ const parseCOMMOTCSV = (csvText) => {
 
   return lines.slice(1).map((line) => {
     const row = parseCSVRow(line);
-    const correlationValue = Number(row[headerIndexMap.correlation]);
+    const correlationColumnIndex =
+      headerIndexMap.correlation ?? headerIndexMap.rawCorrelation;
+    const correlationValue = Number(
+      correlationColumnIndex !== undefined ? row[correlationColumnIndex] : 0
+    );
 
     return {
       slice: row[headerIndexMap.slice] || 'Unknown',
+      ligand: row[headerIndexMap.ligand] || 'Unknown',
+      receptor: row[headerIndexMap.receptor] || 'Unknown',
+      signalType: row[headerIndexMap.signal_type] || 'Unknown',
+      parentSignalId: row[headerIndexMap.parent_signal_id] || 'Unknown',
       pathway: row[headerIndexMap.pathway] || 'Unknown',
-      senderRegion: row[headerIndexMap.senderRegion] || 'Unknown',
-      receiverRegion: row[headerIndexMap.receiverRegion] || 'Unknown',
+      senderRegion: row[headerIndexMap.sender_region] || 'Unknown',
+      receiverRegion: row[headerIndexMap.receiver_region] || 'Unknown',
       downstreamTF: row[headerIndexMap.downstreamTF] || 'Unknown',
       correlation: Number.isFinite(correlationValue) ? correlationValue : 0,
       direction: row[headerIndexMap.direction] || 'unknown'
