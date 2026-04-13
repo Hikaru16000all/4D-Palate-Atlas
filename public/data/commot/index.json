@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "slices": [
+    {
+      "slice": "E125",
+      "file": "slices/E125.csv",
+      "rows": 4
+    }
+  ]
+}

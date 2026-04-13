@@ -1,6 +1,6 @@
 // src/binaryDataLoader.js
 class BinaryDataLoader {
-    constructor(basePath = './data/binary') {
+    constructor(basePath = `${import.meta.env.BASE_URL}data/binary`) {
         this.basePath = basePath;
         this.metadata = null;
         this.baseData = null;

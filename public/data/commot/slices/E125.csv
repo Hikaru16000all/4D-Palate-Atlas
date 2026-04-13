@@ -1,0 +1,5 @@
+slice,ligand,receptor,signal_type,parent_signal_id,pathway,sender_region,receiver_region,downstreamTF,direction
+E125,Inhba,Acvr1b_Acvr2a,lr_pair,pathway:ACTIVIN,ACTIVIN,Fibroblastic,Fibroblastic,Stat4,activation
+E125,Inhba,Acvr1b_Acvr2a,lr_pair,pathway:ACTIVIN,ACTIVIN,Fibroblastic,Fibroblastic,Pir,activation
+E125,Inhba,Acvr1b_Acvr2a,lr_pair,pathway:ACTIVIN,ACTIVIN,Fibroblastic,Fibroblastic,Zfp82,activation
+E125,Inhba,Acvr1b_Acvr2a,lr_pair,pathway:ACTIVIN,ACTIVIN,Fibroblastic,Fibroblastic,Zfp54,activation
