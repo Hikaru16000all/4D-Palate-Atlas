@@ -1,20 +1,39 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { loadCOMMOTInteractions } from '../commotInteractions';
 
+const FILTER_FIELDS = [
+  { key: 'slice', label: 'Slice' },
+  { key: 'ligand', label: 'Ligand' },
+  { key: 'receptor', label: 'Receptor' },
+  { key: 'signalType', label: 'Signal Type' },
+  { key: 'parentSignalId', label: 'Parent Signal ID' },
+  { key: 'pathway', label: 'Pathway' },
+  { key: 'senderRegion', label: 'Sender Region' },
+  { key: 'receiverRegion', label: 'Receiver Region' },
+  { key: 'downstreamTF', label: 'Downstream TF' },
+  { key: 'direction', label: 'Direction' }
+];
+
 const SignalTFPage = ({ isLightTheme }) => {
   const [search, setSearch] = useState('');
-  const [pathwayFilter, setPathwayFilter] = useState('all');
-  const [sliceFilter, setSliceFilter] = useState('all');
+  const [fieldFilters, setFieldFilters] = useState(() =>
+    FILTER_FIELDS.reduce((acc, field) => {
+      acc[field.key] = 'all';
+      return acc;
+    }, {})
+  );
   const [interactions, setInteractions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
 
-  const pathways = useMemo(
-    () => Array.from(new Set(interactions.map(item => item.pathway))).sort(),
-    [interactions]
-  );
-  const slices = useMemo(
-    () => Array.from(new Set(interactions.map(item => item.slice))).sort(),
+  const optionsByField = useMemo(
+    () =>
+      FILTER_FIELDS.reduce((acc, field) => {
+        acc[field.key] = Array.from(
+          new Set(interactions.map(item => item[field.key]).filter(Boolean))
+        ).sort();
+        return acc;
+      }, {}),
     [interactions]
   );
 
@@ -41,8 +60,11 @@ const SignalTFPage = ({ isLightTheme }) => {
     const keyword = search.trim().toLowerCase();
     const safeLower = (value) => String(value || '').toLowerCase();
     return interactions
-      .filter(item => pathwayFilter === 'all' || item.pathway === pathwayFilter)
-      .filter(item => sliceFilter === 'all' || item.slice === sliceFilter)
+      .filter(item =>
+        FILTER_FIELDS.every(field =>
+          fieldFilters[field.key] === 'all' || item[field.key] === fieldFilters[field.key]
+        )
+      )
       .filter(item => {
         if (!keyword) return true;
         return [
@@ -63,7 +85,7 @@ const SignalTFPage = ({ isLightTheme }) => {
         const c2 = Math.abs(Number(a.correlation || 0));
         return c1 - c2;
       });
-  }, [interactions, search, pathwayFilter, sliceFilter]);
+  }, [interactions, search, fieldFilters]);
 
   const panelClass = isLightTheme ? 'bg-white text-gray-900' : 'bg-gray-800 text-gray-100';
   const inputClass = isLightTheme
@@ -83,33 +105,36 @@ const SignalTFPage = ({ isLightTheme }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+      <div className="mb-3">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search pathway / TF / region..."
+          placeholder="Global keyword search..."
           className={`border rounded px-3 py-2 ${inputClass}`}
         />
-        <select
-          value={pathwayFilter}
-          onChange={(e) => setPathwayFilter(e.target.value)}
-          className={`border rounded px-3 py-2 ${inputClass}`}
-        >
-          <option value="all">All pathways</option>
-          {pathways.map(pathway => (
-            <option key={pathway} value={pathway}>{pathway}</option>
-          ))}
-        </select>
-        <select
-          value={sliceFilter}
-          onChange={(e) => setSliceFilter(e.target.value)}
-          className={`border rounded px-3 py-2 ${inputClass}`}
-        >
-          <option value="all">All sections</option>
-          {slices.map(slice => (
-            <option key={slice} value={slice}>{slice}</option>
-          ))}
-        </select>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
+        {FILTER_FIELDS.map(field => (
+          <div key={field.key} className="flex flex-col gap-1">
+            <label className="text-xs opacity-80">{field.label}</label>
+            <select
+              value={fieldFilters[field.key]}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFieldFilters(prev => ({ ...prev, [field.key]: value }));
+              }}
+              className={`border rounded px-3 py-2 text-sm ${inputClass}`}
+            >
+              <option value="all">All {field.label}</option>
+              {(optionsByField[field.key] || []).map(optionValue => (
+                <option key={optionValue} value={optionValue}>
+                  {optionValue}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 text-sm">
