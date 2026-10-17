@@ -13,6 +13,8 @@ import {
 } from './realDataConstants';
 import html2canvas from 'html2canvas';
 import SignalTFPage from './pages/SignalTFPage';
+import GuidePage from './pages/GuidePage';
+import './design.css';
 
 // --- UI Constants & Helpers ---
 const MAX_VIEWS = 4; 
@@ -242,7 +244,7 @@ const CompareModal = ({
                         <div className="mb-4 flex border border-gray-300 rounded overflow-hidden">
                             <input
                                 type="text"
-                                placeholder="Search Traits..."
+                                placeholder="Search gene or TF"
                                 value={traitSearch}
                                 onChange={handleSearchChange}
                                 className="w-full p-2 text-base focus:outline-none text-gray-800"
@@ -730,14 +732,15 @@ const CompareViewerModal = ({
     );
 };
 
-function App() {
+function App({demoMode = null} = {}) {
   const [pointRadius, setPointRadius] = useState(25); 
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isCompareViewerOpen, setIsCompareViewerOpen] = useState(false);
-  const [activePage, setActivePage] = useState('atlas');
+  const [embedded] = useState(() => Boolean(demoMode) || window.location.hash.includes("embed=1"));
+  const [activePage, setActivePage] = useState(() => demoMode === 'atlas' ? 'atlas' : demoMode === 'signal_demo' ? 'signal_tf' : window.location.hash === '#guide' ? 'guide' : window.location.hash.startsWith('#signal-') ? 'signal_tf' : 'atlas');
   const [compareViews, setCompareViews] = useState([]);
   const [traitSearch, setTraitSearch] = useState(''); 
-  const [isLightTheme, setIsLightTheme] = useState(false); 
+  const [isLightTheme, setIsLightTheme] = useState(true);
   const [showCellType, setShowCellType] = useState(false); 
   const [visibleRegions, setVisibleRegions] = useState(new Set());
   
@@ -767,7 +770,7 @@ function App() {
   const filteredLeftTraits = useMemo(() => {
     if (!traitSearch) {
       // 如果没有搜索词，只显示前50个项目，减少渲染负担
-      return ALL_TRAITS_FLAT.slice(0, 50);
+      return TRAIT_CATEGORIES.flatMap(cat => ALL_TRAITS_FLAT.filter(t => t.category === cat.key).slice(0, 25));
     }
     
     const searchLower = traitSearch.toLowerCase();
@@ -775,7 +778,7 @@ function App() {
       t.label.toLowerCase().includes(searchLower) || 
       t.key.toLowerCase().includes(searchLower)
     ).slice(0, 100); // 即使有搜索词，也限制结果数量
-  }, [ALL_TRAITS_FLAT, traitSearch]);
+  }, [ALL_TRAITS_FLAT, traitSearch, isLoading]);
 
   // 数据加载效果 - 使用新的初始化函数
   useEffect(() => {
@@ -1024,29 +1027,31 @@ function App() {
 
   // --- Render ---
   return (
-    <div className={`flex h-screen ${mainBgClass} font-sans`}>
+    <div data-embedded={embedded ? "true" : undefined} data-theme={isLightTheme ? "light" : "dark"} className={`atlas-app flex h-screen ${mainBgClass} font-sans`}>
       
       {/* --- Top Bar --- */}
-      <div className={`absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-between px-4 z-40`}>
-        <div className="flex rounded-lg overflow-hidden border border-gray-500">
+      <div className={`atlas-topbar absolute top-0 left-0 right-0 h-14 ${topBarClass} border-b flex items-center justify-between px-4 z-40`}>
+        <div className="atlas-navigation"><a className="atlas-brand" href="#atlas" onClick={() => setActivePage('atlas')}><img className="atlas-brand-icon" src={`${import.meta.env.BASE_URL}palate.svg`} alt="" width="36" height="36"/><span><strong>4D PALATE</strong><small>SPATIAL MULTIOMIC ATLAS</small></span></a><div className="atlas-tabs flex rounded-lg overflow-hidden border border-gray-500">
             <button
-                onClick={() => setActivePage('atlas')}
+                onClick={() => { setActivePage('atlas'); !embedded && window.history.replaceState(null, '', '#atlas'); }}
+                aria-pressed={activePage === 'atlas'}
                 className={`${topButton} rounded-none ${activePage === 'atlas' ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-700'}`}
             >
                 Atlas
             </button>
             <button
-                onClick={() => setActivePage('signal_tf')}
+                onClick={() => { setActivePage('signal_tf'); !embedded && window.history.replaceState(null, '', '#signal-tf'); }}
+                aria-pressed={activePage === 'signal_tf'}
                 className={`${topButton} rounded-none ${activePage === 'signal_tf' ? 'bg-indigo-600' : 'bg-gray-600 hover:bg-gray-700'}`}
             >
-                Signal→TF
+                Signal → TF
             </button>
-        </div>
+        <button className="guide-nav-link" aria-pressed={activePage === "guide"} onClick={() => {setActivePage("guide"); !embedded && window.history.replaceState(null, "", "#guide");}}>Guide & demos</button></div></div>
 
-        <div className="flex space-x-4">
+        <div className="atlas-actions flex space-x-4">
             {activePage === 'atlas' && (
               <div className={`flex items-center space-x-3 text-base ${textClass}`}>
-                  <span>Cell Size:</span>
+                  <span>Point size</span>
                   <input 
                       type="range" 
                       min="1" 
@@ -1061,10 +1066,10 @@ function App() {
             {/* Theme Toggle */}
             <button 
                 onClick={() => setIsLightTheme(!isLightTheme)}
-                className={`${topButton} bg-gray-500 hover:bg-gray-600`}
+                className={`${topButton} atlas-theme-toggle bg-gray-500 hover:bg-gray-600`}
                 title={isLightTheme ? "Switch to Dark Theme" : "Switch to Light Theme"}
             >
-                {isLightTheme ? '☀️ Light' : '🌙 Dark'}
+                {isLightTheme ? 'Light mode' : 'Dark mode'}
             </button>
             {activePage === 'atlas' && (
               <button 
@@ -1079,7 +1084,7 @@ function App() {
                   onClick={handleDownloadImage}
                   className={`${topButton} bg-gray-600 hover:bg-gray-700`}
               >
-                  Download Results
+                  Export image
               </button>
             )}
         </div>
@@ -1087,10 +1092,10 @@ function App() {
       
       {/* --- Main Content Area --- */}
       {activePage === 'atlas' ? (
-      <div className="flex flex-grow mt-14">
+      <div className="atlas-workbench flex flex-grow mt-14">
       
         {/* --- Left Control Panel (Trait & Section Selection) --- */}
-        <div className={`w-72 flex flex-col ${controlPanelClass}`}>
+        <div className={`atlas-sidebar w-72 flex flex-col ${controlPanelClass}`}>
           
           {/* Trait Section - 固定高度可滚动 */}
           <div className="flex-shrink-0 p-6 border-b border-gray-700">
@@ -1098,7 +1103,7 @@ function App() {
             <div className="flex border border-gray-400 rounded overflow-hidden mb-4">
               <input
                 type="text"
-                placeholder="Search Traits..."
+                placeholder="Search gene or TF"
                 value={traitSearch}
                 onChange={(e) => setTraitSearch(e.target.value)}
                 className="w-full p-2 text-base focus:outline-none text-gray-800"
@@ -1162,17 +1167,17 @@ function App() {
         </div>
 
         {/* --- Center Main Visualization Area --- */}
-        <div className={`flex-grow p-5 relative flex flex-col ${mainBgClass}`}>
+        <div className={`atlas-canvas-area flex-grow p-5 relative flex flex-col ${mainBgClass}`}>
           
           {/* View Info and Controls */}
-          <div className={`flex justify-between items-center mb-3 h-12 ${isLightTheme ? 'bg-gray-100' : 'bg-gray-900'} rounded-t p-3`}>
+          <div className={`atlas-viewbar flex justify-between items-center mb-3 h-12 ${isLightTheme ? 'bg-gray-100' : 'bg-gray-900'} rounded-t p-3`}>
             <h2 className={`text-xl font-semibold ${textClass}`}>
                 {isSingleView 
-                    ? `Trait: ${ALL_TRAITS_FLAT.find(t => t.key === currentTraitKey)?.label || currentTraitKey} | Section: ${currentSliceKey}`
+                    ? `${ALL_TRAITS_FLAT.find(t => t.key === currentTraitKey)?.label || currentTraitKey} · ${currentSliceKey}`
                     : `Comparison View (${views.length} Images)`
                 }
             </h2>
-            <div className="flex space-x-3 items-center">
+            <div className="flex space-x-3 items-center"><label className="atlas-point-size-inline">Point size<input aria-label="Point size" type="range" min="1" max="100" value={pointRadius} onChange={e=>setPointRadius(Number(e.target.value))}/></label>
                 {/* Show Cell Type Toggle */}
                 <button 
                     onClick={() => setShowCellType(!showCellType)}
@@ -1262,8 +1267,8 @@ function App() {
         
       </div>
       ) : (
-        <div className="flex flex-grow mt-14 p-5">
-          <SignalTFPage isLightTheme={isLightTheme} />
+        <div className="atlas-signal-body flex flex-grow mt-14 p-5">
+          {activePage === "guide" ? <GuidePage renderDemo={mode => <App demoMode={mode === "atlas" ? "atlas" : "signal_demo"}/>} onOpen={page => {setActivePage(page === "signal_demo" ? "signal_tf" : page); !embedded && window.history.replaceState(null,"",page === "atlas" ? "#atlas" : page === "signal_demo" ? "#signal-tf?demo=hh-foxf1" : "#signal-tf");}} /> : <SignalTFPage isLightTheme={isLightTheme} demoPreset={demoMode === "signal_demo"} />}
         </div>
       )}
       
@@ -1299,4 +1304,5 @@ function App() {
   );
 }
 
+App.propTypes = {demoMode:(p,n)=>p[n]==null || ['atlas','signal_demo'].includes(p[n]) ? null : new Error('Invalid demoMode')};
 export default App;

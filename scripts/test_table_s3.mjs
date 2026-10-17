@@ -1,0 +1,5 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+import {parseTableCSV,sourceNumber,exportTableCSV,SOURCE_COLUMNS} from '../src/commotInteractions.js';
+const manifest=JSON.parse(fs.readFileSync('public/data/commot/index.json','utf8'));let total=0;
+for(const entry of manifest.slices){const rows=parseTableCSV(fs.readFileSync(`public/data/commot/${entry.detailFile}`,'utf8'));assert.equal(rows.length,entry.detailRows);assert(rows.every(r=>r.Stage===entry.sourceStage));total+=rows.length;const selection=[rows[9],rows[0],rows[1]].map((r,i)=>({...r,_sourceRow:[11,2,3][i]}));const roundtrip=parseTableCSV(exportTableCSV(selection));assert.deepEqual(roundtrip,[rows[0],rows[1],rows[9]]);assert.equal(Object.keys(roundtrip[0]).length,SOURCE_COLUMNS.length);console.log(entry.label,rows.length,'exact-lexical CSV roundtrip passed');}
+assert.equal(total,215460);assert.equal(sourceNumber(''),null);assert.equal(sourceNumber('not a number'),null);assert.equal(sourceNumber('0'),0);assert.throws(()=>parseTableCSV('Stage,correlation\nE125,0.5'),/Missing source columns/);console.log('SOURCE_SCHEMA_AND_VALUE_TESTS_PASSED');

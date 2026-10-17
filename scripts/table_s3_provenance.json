@@ -1,0 +1,55 @@
+{
+  "version": "2.0",
+  "source": "Author-supplied Table S3.xlsx",
+  "sourceSHA256": "a4dd35276e89fa1c142ff05adcbce4777fb89a5cd38271b7b5787b33733a222c",
+  "description": "Exact stored values and original within-stage record order; display-only Stage aliases. No scientific analysis rerun.",
+  "stageMeaning": "Matched spatial sample stage; E15.5 uses E14.0/E14.5 multiome references.",
+  "directionMeaning": "Source direction annotations are computational labels, not evidence of causal activation/repression.",
+  "slices": [
+    {
+      "slice": "E125",
+      "label": "E12.5",
+      "sourceStage": "Embryo12.5",
+      "summaryFile": "table_s3_E125_summary.csv",
+      "summaryRows": 1941,
+      "summaryOrderedValuesSHA256": "336b1c6cdf338e4a1fd99b0df3b8ad123c76575ac3497533f1b31a6876e7aece",
+      "summaryBytes": 242382,
+      "detailFile": "table_s3_E125_detail.csv",
+      "detailRows": 55560,
+      "detailOrderedValuesSHA256": "f13004eb7bdb69e2ab56b033d4b33701512005e6d9e911cd4eb41921135ce92c",
+      "detailBytes": 13135935,
+      "pathways": 69,
+      "tfs": 1030
+    },
+    {
+      "slice": "E135",
+      "label": "E13.5",
+      "sourceStage": "Embryo13.5",
+      "summaryFile": "table_s3_E135_summary.csv",
+      "summaryRows": 2341,
+      "summaryOrderedValuesSHA256": "aac1ffa33c7318fca6d5be615557b90f69cc57a2bf861bae7308f468468862e7",
+      "summaryBytes": 292543,
+      "detailFile": "table_s3_E135_detail.csv",
+      "detailRows": 65660,
+      "detailOrderedValuesSHA256": "da6e835dfcccab7457a1195cba2e761cdfca53dd5b6e979039231220b846d640",
+      "detailBytes": 15561241,
+      "pathways": 89,
+      "tfs": 1076
+    },
+    {
+      "slice": "E155",
+      "label": "E15.5",
+      "sourceStage": "Embryo15.5",
+      "summaryFile": "table_s3_E155_summary.csv",
+      "summaryRows": 3294,
+      "summaryOrderedValuesSHA256": "d5bf3dd0ace1b68f5614881398bbb5dd6ddb9353ed0a2f038285f0f0d401666c",
+      "summaryBytes": 412405,
+      "detailFile": "table_s3_E155_detail.csv",
+      "detailRows": 94240,
+      "detailOrderedValuesSHA256": "a360a97291f7334a455f34ee3a1c9588884562a27542e630156f3ecc394a2011",
+      "detailBytes": 22379737,
+      "pathways": 94,
+      "tfs": 1122
+    }
+  ]
+}
